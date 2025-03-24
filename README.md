@@ -4,7 +4,7 @@
 
 -----------------------------------------------------------------------------------
 HACEOS (Herramienta de Análisis de Circuitos Eléctricos de Orden Superior) es un paquete de clases y funciones 
-desarrolladas en [MATLAB][1] bajo el paradigmad de la programación orientada a objetos para analizar circuitos 
+desarrolladas en [MATLAB][1] bajo el paradigma de la programación orientada a objetos para analizar circuitos 
 eléctricos de manera simbólica, empleando modelos generales mediante ecuaciones integro-diferenciales que permiten 
 encontrar voltajes y corrientes como funciones del tiempo. Los elementos considerados por HACEOS son: resistencia, 
 inductancia, capacitancia, indutancias mutuamente acopladas  por inducción, fuentes dependientes e independientes 
@@ -30,10 +30,36 @@ incluido en la distribución. Para esto solo se requiere acceder desde MATLAB a 
 
 		instalar_haceos
 
+Uso básico
+------------
+Antes de usar HACEOS, se recomienda que el usuario se familizarice con el concepto de ***caso***. 
+En síntesis, un ***caso*** de HACEOS es un mecanismo para ingresar la información de un circuito 
+arbitrario que puede ser analizado en estados como el régimen estacionario, de conmutación 
+o transitorio, e incluso todos ellos en conjunto. Para acceder a la documentación relacionada 
+con la creación del caso basta con ejecutar el comando:
+
+		help formato_caso
+
+En la versión ligera actual de HACEOS, se ha incluido en la carpeta `<HACEOS_ES/casos>` un caso 
+de prueba denominado `caso10n11p5i`, al que se puede acceder ejecutando el comando:
+
+		help caso10n11p5i
+
+HACEOS cuenta con la función `hcs_opciones` con la que se puede personalizar su comportamiento. Por
+defecto, HACEOS no genera ningún tipo de gráfica, por lo que si el usuario desea ver, por ejemplo, 
+el gráfico orientado del circuito ingresado, puede crear una ***estructura*** de opciones así:
+
+		hcs_opt = hcs_opciones('dibujar_graficos', 1)
+
+Ahora se puede ejecutar HACEOS con esta ***estructura*** de opciones para obtener una visualización 
+del gráfico orientado del circuito (por defecto, en el estado estacionario):
+
+		resultados = haceos(caso10n11p5i, hcs_opt)
+
 Citación de HACEOS
 ------------
-Los [autores][3] exigimos que cualquier publicación derivada del uso de HACEOS incluyan 
-explícitamente una cita de la siguiente forma:
+Los [autores][3] exigimos que cualquier publicación derivada del uso de HACEOS incluya 
+explícitamente en sus agradecimientos una citación de la siguiente forma:
 
 >   W. González-Vanegas, B.S. Ospina-Rendon, and B. Gordon-Arango, "HACEOS: Herramienta de Análisis
     de Circuitos Eléctricos de Orden Superior," 2025. [En línea]. Disponible en: [https://github.com/HACEOS/HACEOS_ES][4]
@@ -41,5 +67,5 @@ explícitamente una cita de la siguiente forma:
 ---- 
  [1]: https://www.mathworks.com/
  [2]: https://www.mathworks.com/products/symbolic.html
- [3]: https://github.com/HACEOS/HACEOS_ES/AUTORES
+ [3]: https://github.com/HACEOS/HACEOS_ES/blob/main/AUTORES
  [4]: https://github.com/HACEOS/HACEOS_ES
