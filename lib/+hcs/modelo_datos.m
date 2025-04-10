@@ -48,11 +48,12 @@ classdef modelo_datos < handle
             es1 = struct('puertas', [], ...
                          'marcas_pol', []);
             est_clases = struct('DC', es1, ...
-                                  'SIN', [], ...
+                                  'SIN', es1, ...
                                   'EXP', es1, ...
-                                  'No_Fuente', es1);
-            est_clases.SIN = struct('igual_W', es1, ...
-                                      'dif_W', es1);            
+                                  'NoFuente', es1, ...
+                                  'Combinada', es1);
+            %est_clases.SIN = struct('igual_W', es1, ...
+            %                          'dif_W', es1);            
             es2 = struct('nodos', [], ...
                          'nombre_nodos', [], ...
                          'puertas', [], ...
@@ -61,11 +62,12 @@ classdef modelo_datos < handle
                          'fuentes_dep', [], ...
                          'marcas_pol', []);
             est_islas = struct('DC', es2, ...
-                               'SIN', [], ...
+                               'SIN', es2, ...
                                'EXP', es2, ...
-                               'No_Fuente', es2);
-            est_islas.SIN = struct('igual_W', es1, ...
-                                   'dif_W', es1);
+                               'NoFuente', es2, ...
+                               'Combinada',es2);
+            %est_islas.SIN = struct('igual_W', es1, ...
+            %                       'dif_W', es1);
             obj.clases = struct('estacionario', est_clases, ...
                                 'conmutacion', [], ...
                                 'transitorio',[]);
@@ -87,10 +89,11 @@ classdef modelo_datos < handle
             % la propiedad obj.clases. 
             
             if ~isempty(obj.clases.estacionario)
-                 isla = {'DC', 'SIN', 'EXP', 'No_Fuente'};
+                 isla = {'DC', 'SIN', 'EXP', 'NoFuente', 'Combinada'};
                 for Y = 1:numel(isla)
                     if ~isempty(obj.islas.estacionario.(isla{Y}))
-                        
+                        obj.islas.estacionario.(isla{Y}) = struct('puertas',[], ...
+                                                                  'marcas_pol', []);
                         % Caso DC
                         if strcmp(isla{Y},'DC')
                             if ~isempty(obj.islas.estacionario.DC.puertas)
@@ -101,8 +104,9 @@ classdef modelo_datos < handle
                                         obj.elementos.estacionario.DC(x).puertas{p} = obj.clases.estacionario.DC(x).puertas{p}();                                     
                                     end
                                     if ~isempty(obj.islas.estacionario.DC(x).marcas_pol)
-                                        for i=1:size(obj.islas.estacionario.DC(x).marcas_pol)
-                                            obj.elementos.estacionario.DC(x).marcas_pol{i,1} = obj.clases.estacionario.DC(x).marcas_pol{i}();
+                                        [num_marcas,~] = size(obj.islas.estacionario.DC(x).marcas_pol);
+                                        for i=1:num_marcas
+                                            obj.elementos.estacionario.DC(x).marcas_pol{i,1} = obj.clases.estacionario.DC(x).marcas_pol;
                                         end
                                     end 
                                 end
@@ -111,57 +115,73 @@ classdef modelo_datos < handle
                         
                         % Caso sinusoidal con igual o distinta frecuencia
                         if strcmp(isla{Y},'SIN')
-                            exc = {'igual_W' 'dif_W'};
+                            %exc = {'igual_W' 'dif_W'};
                             % E recorre igual_w y dif_W
-                            for E = 1:numel(exc)
-                                if ~isempty(obj.islas.estacionario.(isla{Y}).(exc{E}).puertas)
+                            
+                                if ~isempty(obj.islas.estacionario.(isla{Y}).puertas)
                                     % "x" recorre todas las capas de igual_W y dif_W
-                                    for x = 1:size(obj.islas.estacionario.(isla{Y}).(exc{E}),2)
-                                        num_obj = numel(obj.clases.estacionario.(isla{Y})(x).(exc{E}).puertas);
-                                        obj.elementos.estacionario.(isla{Y})(x).(exc{E}).puertas = cell(num_obj,1);
+                                    for x = 1:size(obj.islas.estacionario.(isla{Y}),2)
+                                        num_obj = numel(obj.clases.estacionario.(isla{Y})(x).puertas);
+                                        obj.elementos.estacionario.(isla{Y})(x).puertas = cell(num_obj,1);
                                         for p = 1:num_obj
-                                            obj.elementos.estacionario.(isla{Y}).(exc{E}).puertas{p} = obj.clases.estacionario.(isla{Y}).(exc{E})(x).puertas{p}();
+                                            obj.elementos.estacionario.(isla{Y})(x).puertas{p} = obj.clases.estacionario.(isla{Y})(x).puertas{p}();
                                         end
-                                        if ~isempty(obj.islas.estacionario.(isla{Y}).(exc{E}).marcas_pol)
-                                            for i=1:size(obj.islas.estacionario.(isla{Y}).(exc{E}).marcas_pol)
-                                                obj.elementos.estacionario.(isla{Y}).(exc{E}).marcas_pol{i,1} = obj.clases.estacionario.(isla{Y}).(exc{E}).marcas_pol{i}();
+                                        if ~isempty(obj.islas.estacionario.(isla{Y})(x).marcas_pol)
+                                            for i=1:size(obj.islas.estacionario.(isla{Y})(x).marcas_pol)
+                                                obj.elementos.estacionario.(isla{Y})(x).marcas_pol{i,1} = obj.clases.estacionario.(isla{Y}).marcas_pol{i}();
                                             end
                                         end
                                     end
                                 end
-                            end
                         end
                         
                         % Caso EXP
-                        if strcmp(isla{Y},'EXP')
-                            if ~isempty(obj.islas.estacionario.EXP.puertas)
-                                for x = 1:size(obj.islas.estacionario.EXP,2)  % "x" recorre todas las capas de EXP
-                                    num_obj = numel(obj.clases.estacionario.EXP(x).puertas);
-                                    obj.elementos.estacionario.EXP(x).puertas = cell(num_obj,1);
+                        % if strcmp(isla{Y},'EXP')
+                        %     if ~isempty(obj.islas.estacionario.EXP.puertas)
+                        %         for x = 1:size(obj.islas.estacionario.EXP,2)  % "x" recorre todas las capas de EXP
+                        %             num_obj = numel(obj.clases.estacionario.EXP(x).puertas);
+                        %             obj.elementos.estacionario.EXP(x).puertas = cell(num_obj,1);
+                        %             for p = 1:num_obj
+                        %                 obj.elementos.estacionario.EXP(x).puertas{p} = obj.clases.estacionario.EXP(x).puertas{p}();
+                        %             end
+                        %             if ~isempty(obj.islas.estacionario.EXP(x).marcas_pol)
+                        %                 for i=1:size(obj.islas.estacionario.EXP(x).marcas_pol)
+                        %                     obj.elementos.estacionario.EXP(x).marcas_pol{i,1} = obj.clases.estacionario.EXP(x).marcas_pol{i}();
+                        %                 end
+                        %             end
+                        %         end
+                        %     end
+                        % end
+                        
+                        % Caso No_Fuente
+                        if strcmp(isla{Y},'NoFuente')
+                            if ~isempty(obj.islas.estacionario.NoFuente.puertas)
+                                for x = 1:size(obj.islas.estacionario.NoFuente,2)  % "x" recorre todas las capas de No_fuente
+                                    num_obj = numel(obj.clases.estacionario.NoFuente(x).puertas);
+                                    obj.elementos.estacionario.NoFuente(x).puertas = cell(num_obj,1);
                                     for p = 1:num_obj
-                                        obj.elementos.estacionario.EXP(x).puertas{p} = obj.clases.estacionario.EXP(x).puertas{p}();
+                                        obj.elementos.estacionario.NoFuente(x).puertas{p} = obj.clases.estacionario.NoFuente(x).puertas{p}();
                                     end
-                                    if ~isempty(obj.islas.estacionario.EXP(x).marcas_pol)
-                                        for i=1:size(obj.islas.estacionario.EXP(x).marcas_pol)
-                                            obj.elementos.estacionario.EXP(x).marcas_pol{i,1} = obj.clases.estacionario.EXP(x).marcas_pol{i}();
+                                    if ~isempty(obj.islas.estacionario.NoFuente(x).marcas_pol)
+                                        for i=1:size(obj.islas.estacionario.NoFuente(x).marcas_pol)
+                                            obj.elementos.estacionario.NoFuente(x).marcas_pol{i,1} = obj.clases.estacionario.NoFuente(x).marcas_pol{i}();
                                         end
                                     end
                                 end
                             end
                         end
-                        
-                        % Caso No_Fuente
-                        if strcmp(isla{Y},'No_Fuente')
-                            if ~isempty(obj.islas.estacionario.No_Fuente.puertas)
-                                for x = 1:size(obj.islas.estacionario.No_Fuente,2)  % "x" recorre todas las capas de No_fuente
-                                    num_obj = numel(obj.clases.estacionario.No_Fuente(x).puertas);
-                                    obj.elementos.estacionario.No_Fuente(x).puertas = cell(num_obj,1);
+                        % Caso Combinada
+                        if strcmp(isla{Y},'Combinada')
+                            if ~isempty(obj.islas.estacionario.Combinada.puertas)
+                                for x = 1:size(obj.islas.estacionario.combinada,2)  % "x" recorre todas las capas de No_fuente
+                                    num_obj = numel(obj.clases.estacionario.combinada(x).puertas);
+                                    obj.elementos.estacionario.combinada(x).puertas = cell(num_obj,1);
                                     for p = 1:num_obj
-                                        obj.elementos.estacionario.No_Fuente(x).puertas{p} = obj.clases.estacionario.No_Fuente(x).puertas{p}();
+                                        obj.elementos.estacionario.combinada(x).puertas{p} = obj.clases.estacionario.combinada(x).puertas{p}();
                                     end
-                                    if ~isempty(obj.islas.estacionario.No_Fuente(x).marcas_pol)
-                                        for i=1:size(obj.islas.estacionario.No_Fuente(x).marcas_pol)
-                                            obj.elementos.estacionario.No_Fuente(x).marcas_pol{i,1} = obj.clases.estacionario.No_Fuente(x).marcas_pol{i}();
+                                    if ~isempty(obj.islas.estacionario.combinada(x).marcas_pol)
+                                        for i=1:size(obj.islas.estacionario.combinada(x).marcas_pol)
+                                            obj.elementos.estacionario.combinada(x).marcas_pol{i,1} = obj.clases.estacionario.combinada(x).marcas_pol{i}();
                                         end
                                     end
                                 end
@@ -189,7 +209,7 @@ classdef modelo_datos < handle
             [~,~,~,~,~,~,~,~,CTE,SIN,COS,EXP] = id_col_caso;                                 % Definir apuntadores de columna para el caso
             ID_NODO = id_col_nodos;
             estado = {'estacionario'};
-            isla = {'DC','EXP','No_Fuente'};
+            isla = {'DC','EXP','SIN','NoFuente','Combinada'};
             conjunto = {'puertas','marcas_pol'};            
             for e = 1:numel(estado)           % ciclo para barrer entre estado estacionario y transitorio
                 for s = 1:numel(isla)         % ciclo para barrer las islas
@@ -255,81 +275,77 @@ classdef modelo_datos < handle
                                 % Actualizar el objeto
                                 obj.elementos.(estado{e}).(conjunto{c}){p} = objeto;
                             end
-                        end                                            
-                    end
-                end
-                isla_w = {'SIN'};
-                Frec = {'igual_W','dif_W'};
-                for l = 1:numel(isla_w)
-                    for w = 1:numel(Frec)
-                        for c = 1:numel(conjunto)
-                            if ~isempty(obj.elementos.estacionario.(isla_w{l}).(Frec{w}).(conjunto{c}))
-                                for p = 1:numel(obj.elementos.(estado{e}).(isla_w{l}).(Frec{w}).(conjunto{c}))
-                                    id_objeto = obj.islas.(estado{e}).(isla_w{l}).(Frec{w}).(conjunto{c})(p);
-                                    objeto = obj.elementos.(estado{e}).(isla_w{l}).(Frec{w}).(conjunto{c}){p};
-                                    id_fila_P = find(caso.puertas(:,ID_P)==id_objeto);
-                                    id_filas_marcas = find(caso.marcas_pol(:,ID_MARCA)==id_objeto);
-
-                                    % Si el objeto no es del tipo marcas de polaridad
-                                    if ~isa(objeto,'hcs.marcas_polaridad') 
-                                        % Importar propiedades por defecto
-                                        objeto.id = id_fila_P;
-                                        objeto.term1 = caso.puertas(id_fila_P,N_ENV);
-                                        objeto.nombre_term1 = caso.nombre_nodos{find(objeto.term1==caso.nodos(:,ID_NODO))};
-                                        objeto.term2 = caso.puertas(id_fila_P,N_REC);
-                                        objeto.nombre_term2 = caso.nombre_nodos{find(objeto.term2==caso.nodos(:,ID_NODO))};
-                                        objeto.nat   = caso.puertas(id_fila_P,NAT_P);
-                                        objeto.nombre_puerta = caso.nombre_puertas{id_objeto};
-                                        objeto.tipo  = caso.puertas(id_fila_P,TIPO_P);
-
-                                        % Importar propiedades especificas
-                                        if isa(objeto,'md_puerta_rlc')
-                                            objeto.parametro = caso.puertas(id_fila_P,VAL_P);
-                                        elseif isa(objeto,'md_puerta_fte_indep')
-                                            objeto.tipo_senal = caso.puertas(id_objeto,VAL_P);
-                                            objeto.tipo_fuente = caso.puertas(id_objeto,NAT_P);
-                                            id_fuente = find(cell2mat(caso.fuentes_ind(:,ID_FTE_IND))==id_objeto);
-                                            if objeto.tipo_senal == CTE
-                                                objeto.parametro = caso.fuentes_ind{id_fuente,PAR_FTE_IND};
-                                            elseif objeto.tipo_senal == SIN || objeto.tipo_senal == COS
-                                                objeto.parametro = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
-                                                % objeto.parametro.amplitud = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(1);
-                                                % objeto.parametro.w        = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
-                                                % objeto.parametro.desfase  = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(3);
-                                                % objeto.parametro.offset   = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(4);
-                                            elseif objeto.tipo_senal == EXP
-                                                objeto.parametro.amplitud  = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(1);
-                                                objeto.parametro.exponente = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
-                                                objeto.parametro.offset    = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(3);
-                                            end
-
-                                        elseif isa(objeto,'md_puerta_fte_dep')
-                                            id_fuente = find(caso.fuentes_dep(:,ID_FTE_DEP)==id_objeto);
-                                            objeto.tipo_fuente = caso.fuentes_dep(id_fuente,TIPO_FTE_DEP);
-                                            objeto.id_dep      = caso.fuentes_dep(id_fuente,ID_DEPEN);
-                                            objeto.tipo_dep    = caso.fuentes_dep(id_fuente,TIPO_DEPEN);
-                                            objeto.parametro   = caso.fuentes_dep(id_fuente,PARAMETRO);
-                                            objeto.constante   = caso.puertas(id_objeto,VAL_P);
-                                        end
-
-                                    else
-                                        % Si el objeto es del tipo marcas de polaridad
-                                        objeto.id_marca               = id_filas_marcas;
-                                        objeto.id_puerta_1_acoplada   = caso.marcas_pol(id_filas_marcas,ID_L1);
-                                        objeto.id_puerta_2_acoplada   = caso.marcas_pol(id_filas_marcas,ID_L2);
-                                        objeto.id_terminal_1_acoplada = caso.marcas_pol(id_filas_marcas,N_MARCADO_L1);
-                                        objeto.id_terminal_2_acoplada = caso.marcas_pol(id_filas_marcas,N_MARCADO_L2);
-                                        objeto.parametro              = caso.marcas_pol(id_filas_marcas,VAL_ACOPLE);
-                                    end
-                                    % Actualizar el objeto
-                                    obj.elementos.(estado{e}).(conjunto{c}){p} = objeto;
-                                end
-                            end
                         end
                     end
                 end
+                % isla_w = 'SIN';
+                % for c = 1:numel(conjunto)
+                %     if ~isempty(obj.elementos.estacionario.(isla_w).(conjunto{c}))
+                %         for p = 1:numel(obj.elementos.(estado{e}).(isla_w).(conjunto{c}))
+                %             id_objeto = obj.islas.(estado{e}).(isla_w).(conjunto{c})(p);
+                %             objeto = obj.elementos.(estado{e}).(isla_w).(conjunto{c}){p};
+                %             id_fila_P = find(caso.puertas(:,ID_P)==id_objeto);
+                %             id_filas_marcas = find(caso.marcas_pol(:,ID_MARCA)==id_objeto);
+                % 
+                %             % Si el objeto no es del tipo marcas de polaridad
+                %             if ~isa(objeto,'hcs.marcas_polaridad')
+                %                 % Importar propiedades por defecto
+                %                 objeto.id = id_fila_P;
+                %                 objeto.term1 = caso.puertas(id_fila_P,N_ENV);
+                %                 objeto.nombre_term1 = caso.nombre_nodos{find(objeto.term1==caso.nodos(:,ID_NODO))};
+                %                 objeto.term2 = caso.puertas(id_fila_P,N_REC);
+                %                 objeto.nombre_term2 = caso.nombre_nodos{find(objeto.term2==caso.nodos(:,ID_NODO))};
+                %                 objeto.nat   = caso.puertas(id_fila_P,NAT_P);
+                %                 objeto.nombre_puerta = caso.nombre_puertas{id_objeto};
+                %                 objeto.tipo  = caso.puertas(id_fila_P,TIPO_P);
+                % 
+                %                 % Importar propiedades especificas
+                %                 if isa(objeto,'md_puerta_rlc')
+                %                     objeto.parametro = caso.puertas(id_fila_P,VAL_P);
+                %                 elseif isa(objeto,'md_puerta_fte_indep')
+                %                     objeto.tipo_senal = caso.puertas(id_objeto,VAL_P);
+                %                     objeto.tipo_fuente = caso.puertas(id_objeto,NAT_P);
+                %                     id_fuente = find(cell2mat(caso.fuentes_ind(:,ID_FTE_IND))==id_objeto);
+                %                     if objeto.tipo_senal == CTE
+                %                         objeto.parametro = caso.fuentes_ind{id_fuente,PAR_FTE_IND};
+                %                     elseif objeto.tipo_senal == SIN || objeto.tipo_senal == COS
+                %                         objeto.parametro = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
+                %                         % objeto.parametro.amplitud = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(1);
+                %                         % objeto.parametro.w        = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
+                %                         % objeto.parametro.desfase  = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(3);
+                %                         % objeto.parametro.offset   = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(4);
+                %                     elseif objeto.tipo_senal == EXP
+                %                         objeto.parametro.amplitud  = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(1);
+                %                         objeto.parametro.exponente = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(2);
+                %                         objeto.parametro.offset    = caso.fuentes_ind{id_fuente,PAR_FTE_IND}(3);
+                %                     end
+                % 
+                %                 elseif isa(objeto,'md_puerta_fte_dep')
+                %                     id_fuente = find(caso.fuentes_dep(:,ID_FTE_DEP)==id_objeto);
+                %                     objeto.tipo_fuente = caso.fuentes_dep(id_fuente,TIPO_FTE_DEP);
+                %                     objeto.id_dep      = caso.fuentes_dep(id_fuente,ID_DEPEN);
+                %                     objeto.tipo_dep    = caso.fuentes_dep(id_fuente,TIPO_DEPEN);
+                %                     objeto.parametro   = caso.fuentes_dep(id_fuente,PARAMETRO);
+                %                     objeto.constante   = caso.puertas(id_objeto,VAL_P);
+                %                 end
+                % 
+                %             else
+                %                 % Si el objeto es del tipo marcas de polaridad
+                %                 objeto.id_marca               = id_filas_marcas;
+                %                 objeto.id_puerta_1_acoplada   = caso.marcas_pol(id_filas_marcas,ID_L1);
+                %                 objeto.id_puerta_2_acoplada   = caso.marcas_pol(id_filas_marcas,ID_L2);
+                %                 objeto.id_terminal_1_acoplada = caso.marcas_pol(id_filas_marcas,N_MARCADO_L1);
+                %                 objeto.id_terminal_2_acoplada = caso.marcas_pol(id_filas_marcas,N_MARCADO_L2);
+                %                 objeto.parametro              = caso.marcas_pol(id_filas_marcas,VAL_ACOPLE);
+                %             end
+                %             % Actualizar el objeto
+                %             obj.elementos.(estado{e}).(conjunto{c}){p} = objeto;
+                %         end
+                %     end
+                % end
             end
         end
+
 
         function obj_interruptores = crear_interruptores(obj,caso)
             % Metodo para identificar y crear objetos de clase hcs.interruptor
