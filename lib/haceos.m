@@ -80,6 +80,7 @@ function resultados = haceos(caso, opciones)
                                          @md.inicializar_transitorio};
     end
     
+    %cellfun(@(x) x(hcs_caso, mr), metodos_extraccion_md,'UniformOutput',false);  % ejecutar cada metodo de extraccion
     cellfun(@(x) x(hcs_caso, mr), metodos_extraccion_md,'UniformOutput',false);  % ejecutar cada metodo de extraccion
     cellfun(@(x) x(),metodos_inicializacion_md,'UniformOutput',false);           % ejecutar cada metodo de inicializacion
     md.construir();                                                              % crear objetos para cada puerta del circuito
@@ -89,7 +90,7 @@ function resultados = haceos(caso, opciones)
     
     %% Construir gráficas según requerimientos
     if opciones.dibujar_graficos
-        mr.dibujar_graficos(md, estados, opciones);
+        mr.dibujar_graficos(estados,opciones);
     end
     
     %% Crear estructura de resultados

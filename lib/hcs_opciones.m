@@ -80,9 +80,9 @@ function [resultado, mensaje, nuevo_valor] = validar_opcion(campo, valor)
                 end
             end
         case {'dibujar_graficos'}
-            if ~ismember(valor, [0 1 2])
+            if ~ismember(valor, [0 1 2 3 4])
                 resultado = false;
-                msm = ' la opcion ''dibujar_graficos'' debe ser 0, 1 o 2.';
+                msm = ' la opcion ''dibujar_graficos'' debe ser 0, 1, 2, 3 o 4.';
             else
                 resultado = true;
                 msm = ' valor correcto';
