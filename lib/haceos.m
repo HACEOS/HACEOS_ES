@@ -43,7 +43,7 @@ function resultados = haceos(caso, opciones)
     %% Construir modelo de red
     mr = hcs.modelo_red();
     
-    %% Construir modelo de datos de acuerdo con los estados a analizar
+    %% Asignar handles para el modelo de datos y el modelo matematico
     estados = opciones.estado_de_analisis; 
     switch estados
         case {'estacionario'}
@@ -58,29 +58,30 @@ function resultados = haceos(caso, opciones)
             md = md_trasitorio();
             metodos_extraccion_md = {@md.extraer_info_transitorio};
             metodos_inicializacion_md = {@md.inicializar_transitorio};
-        case {'estionario_conmutacion', 'conmutacion_estacionario'}
+        case {'estacionario_conmutacion', 'conmutacion_estacionario'}
             md = md_estacionario_conmutacion();
-            metodos_extraccion_md = {@md.extraer_estacionario
-                                     @md.extraer_conmutacion};
+            metodos_extraccion_md = {@md.extraer_info_estacionario
+                                     @md.extraer_info_conmutacion};
             metodos_inicializacion_md = {@md.inicializar_estacionario
                                          @md.inicializar_conmutacion};
         case {'conmutacion_transitorio', 'transitorio_conmutacion'}
             md = md_conmutacion_transitorio();
-            metodos_extraccion_md = {@md.extraer_conmutacion
-                                     @md.extraer_transitorio};
+            metodos_extraccion_md = {@md.extraer_info_conmutacion
+                                     @md.extraer_info_transitorio};
             metodos_inicializacion_md = {@md.inicializar_conmutacion
                                          @md.inicializar_transitorio};
         otherwise
             md = md_completo();
-            metodos_extraccion_md = {@md.extraer_estacionario
-                                     @md.extraer_conmutacion
-                                     @md.extraer_transitorio};
+            metodos_extraccion_md = {@md.extraer_info_estacionario
+                                     @md.extraer_info_conmutacion
+                                     @md.extraer_info_transitorio};
             metodos_inicializacion_md = {@md.inicializar_estacionario
                                          @md.inicializar_conmutacion
                                          @md.inicializar_transitorio};
     end
     
-    %cellfun(@(x) x(hcs_caso, mr), metodos_extraccion_md,'UniformOutput',false);  % ejecutar cada metodo de extraccion
+    
+    %% Construir modelo de datos de acuerdo con los estados a analizar
     cellfun(@(x) x(hcs_caso, mr), metodos_extraccion_md,'UniformOutput',false);  % ejecutar cada metodo de extraccion
     cellfun(@(x) x(),metodos_inicializacion_md,'UniformOutput',false);           % ejecutar cada metodo de inicializacion
     md.construir();                                                              % crear objetos para cada puerta del circuito
