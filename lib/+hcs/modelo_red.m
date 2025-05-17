@@ -235,6 +235,95 @@ classdef modelo_red < handle
             grafico_orientado = digraph(grafico_no_orientado.Edges);
         end
 
+        function [anillos_fund_id, anillos_fund_nombres] = hallar_anillos_fundametales(obj, grafico_no_orientado)
+            
+            % Identificar ramas y enlaces localmente
+            ramas = find(grafico_no_orientado.Edges.Weight == 1);
+            enlaces =  find(grafico_no_orientado.Edges.Weight == 2);
+            anillos = cell(length(ramas),1);
+
+            % Crear arbol
+            arbol = minspantree(grafico_no_orientado);
+
+            % Revisar si el arbol efectivamente es valido (contiene unicamente ramas: enlaces tienen un mayor peso)
+            if any(arbol.Edges.Weight > 1)
+                error('hcs.modelo_red:hallar_anillos_fundamentales: la definicion de ramas y enlaces no permite encontrar un arbol correcto. Por favor revise la informacion ingresada en el caso.')
+            end
+
+            % Para cada enlace ...
+            for e = 1:length(enlaces)
+                enlace = grafico_no_orientado.Edges(enlaces(e),:);   % extraer enlace del grafico
+                arbol_temp = addedge(arbol,enlace);                  % adicionar enlace al arbol
+                [~, anillo] = allcycles(arbol_temp);                 % encontrar el unico anillo que se forma (anillo fundamental)
+                id_puertas_anillo = arbol_temp.Edges.ID(anillo{1});  % encontrar los ID de las puertas que conforman el anillo fundamental
+                anillos{e} = id_puertas_anillo';                     % almacenar dichos ID consecutivamente para cada enlace
+            end
+
+            anillos_fund_id = cell(size(grafico_no_orientado.Edges,1),1);  % almacenar los anillos fundamentales solo en los enlaces (ramas quedan vacias)
+            anillos_fund_id(enlaces) = anillos;
+
+            if nargout > 1
+                anillos_fund_nombres = cell(size(anillos_fund_id));
+                for a = 1:length(anillos_fund_nombres)
+                    if ~isempty(anillos_fund_id{a})
+                        anillos_fund_nombres{a} = grafico_no_orientado.Edges.Labels(anillos_fund_id{a})';
+                    end
+                end
+            end            
+        end
+
+        function [cortes_fund_id, cortes_fund_nombres] = hallar_cortes_fundametales(obj, grafico_no_orientado)
+
+            % Identificar ramas y enlaces localmente
+            ramas = find(grafico_no_orientado.Edges.Weight == 1);
+            enlaces =  find(grafico_no_orientado.Edges.Weight == 2);
+            cortes = cell(length(ramas),1);
+
+            % Crear arbol
+            arbol = minspantree(grafico_no_orientado);
+
+            % Revisar si el arbol efectivamente es valido (contiene unicamente ramas: enlaces tienen un mayor peso)
+            if any(arbol.Edges.Weight > 1)
+                error('hcs.modelo_red:hallar_cortes_fundamentales: la definicion de ramas y enlaces no permite encontrar un arbol correcto. Por favor revise la informacion ingresada en el caso.')
+            end
+
+            % Para cada rama ...
+            for r = 1:length(ramas)
+                corte_hallado = 0;                                                      % inicializar bandera de corte hallado
+                for ne = 1:length(enlaces)
+                    todos_los_candidatos = nchoosek(enlaces, ne);                       % encontrar todas la combinaciones con "ne" enlaces
+                    for C = 1:size(todos_los_candidatos,1)                              % para cada combinacion ...
+                        grafico_temp = grafico_no_orientado;
+                        candidatos = todos_los_candidatos(C,:);                         % identificar los "ne" enlaces candidatos
+                        grafico_temp = rmedge(grafico_temp, [candidatos ramas(r)]);     % removerlos del grafico junto con la rama bajo analisis
+                        conteo = conncomp(grafico_temp);                                % encontrar las islas distintas del grafico resultante
+                        if length(unique(conteo)) > 1                                   % si hay mas de una isla, el grafico es desconectado y se ha hallado el corte fundamental
+                            corte_hallado = 1;
+                            break
+                        end
+                    end
+                    if corte_hallado
+                        break
+                    end
+                end
+                id_puertas_corte = grafico_no_orientado.Edges.ID([ramas(r) candidatos]);  % encontrar los ID de las puertas que conforman el corte fundamental
+                cortes{r} = id_puertas_corte';
+            end
+
+            cortes_fund_id = cell(size(grafico_no_orientado.Edges,1),1);  % almacenar los cortes fundamentales solo en las ramas (enlaces quedan vacios)
+            cortes_fund_id(ramas) = cortes;
+
+            if nargout > 1
+                cortes_fund_nombres = cell(size(cortes_fund_id));
+                for c = 1:length(cortes_fund_nombres)
+                    if ~isempty(cortes_fund_id{c})
+                        [~, id_pueras_local] = ismember(cortes_fund_id{c}, grafico_no_orientado.Edges.ID); 
+                        cortes_fund_nombres{c} = grafico_no_orientado.Edges.Labels(id_pueras_local)';
+                    end
+                end
+            end
+        end
+
         function dibujar_graficos(obj,estados,opciones)
             tiene_ = find(estados == '_');
             if ~isempty(tiene_)
