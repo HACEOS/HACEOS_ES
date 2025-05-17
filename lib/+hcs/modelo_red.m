@@ -57,7 +57,7 @@ classdef modelo_red < handle
                                    nombre_puertas, ...
                                    id_puertas,nat, ...
                                    valor_puerta,...
-                                   'VariableNames', {'EndNodes' 'Weights' 'Labels' 'ID' 'NAT' 'VAL_P'});
+                                   'VariableNames', {'EndNodes' 'Weight' 'Labels' 'ID' 'NAT' 'VAL_P'});
             
             % Construir grafico no orientado del circuito original
             gno_original = graph(tabla_grafo);
@@ -273,8 +273,8 @@ classdef modelo_red < handle
             if strcmp(tipo_grafico,'go')
                 figure;
                 G1 = obj.graficos_orientados.originales.(estado);
-                ramas = G1.Edges.Weights == 1;
-                enlaces = G1.Edges.Weights == 2;
+                ramas = G1.Edges.Weight == 1;
+                enlaces = G1.Edges.Weight == 2;
                 E = plot(G1,'EdgeLabel',G1.Edges.Labels,'Layout','layered',"EdgeFontSize",18,...
                         "EdgeFontName",'Times New Roman',"EdgeLabelColor",'blue',"NodeLabel",G1.Nodes.Name,...
                         "NodeLabelColor",'black',"NodeColor",'black',"NodeFontSize",12,"MarkerSize",...
@@ -285,8 +285,8 @@ classdef modelo_red < handle
                     title('Estado estacionario completo')
                 figure;
                 G2 = obj.graficos_orientados.depurados.(estado);
-                ramas = G2.Edges.Weights == 1;
-                enlaces = G2.Edges.Weights == 2;
+                ramas = G2.Edges.Weight == 1;
+                enlaces = G2.Edges.Weight == 2;
                 E = plot(G2,'EdgeLabel',G2.Edges.Labels,'Layout','layered',"EdgeFontSize",18,...
                         "EdgeFontName",'Times New Roman',"EdgeLabelColor",'blue',"NodeLabel",G2.Nodes.Name,...
                         "NodeLabelColor",'black',"NodeColor",'black',"NodeFontSize",12,"MarkerSize",...
@@ -298,8 +298,8 @@ classdef modelo_red < handle
             else
                 figure;
                 G1 = obj.graficos_no_orientados.originales.(estado);
-                ramas = G1.Edges.Weights == 1;
-                enlaces = G1.Edges.Weights == 2;
+                ramas = G1.Edges.Weight == 1;
+                enlaces = G1.Edges.Weight == 2;
                 E = plot(G1,'EdgeLabel',G1.Edges.Labels,'Layout','layered',"EdgeFontSize",18,...
                         "EdgeFontName",'Times New Roman',"EdgeLabelColor",'blue',"NodeLabel",G1.Nodes.Name,...
                         "NodeLabelColor",'black',"NodeColor",'black',"NodeFontSize",12,"MarkerSize",...
@@ -310,8 +310,8 @@ classdef modelo_red < handle
                     title('Estado estacionario completo')
                 figure;
                 G2 = obj.graficos_no_orientados.depurados.(estado);
-                ramas = G2.Edges.Weights == 1;
-                enlaces = G2.Edges.Weights == 2;
+                ramas = G2.Edges.Weight == 1;
+                enlaces = G2.Edges.Weight == 2;
                 E = plot(G2,'EdgeLabel',G2.Edges.Labels,'Layout','layered',"EdgeFontSize",18,...
                         "EdgeFontName",'Times New Roman',"EdgeLabelColor",'blue',"NodeLabel",G2.Nodes.Name,...
                         "NodeLabelColor",'black',"NodeColor",'black',"NodeFontSize",12,"MarkerSize",...
