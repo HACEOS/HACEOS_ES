@@ -266,7 +266,8 @@ classdef modelo_red < handle
                 anillos_fund_nombres = cell(size(anillos_fund_id));
                 for a = 1:length(anillos_fund_nombres)
                     if ~isempty(anillos_fund_id{a})
-                        anillos_fund_nombres{a} = grafico_no_orientado.Edges.Labels(anillos_fund_id{a})';
+                        [~, id_puertas_local] = ismember(anillos_fund_id{a}, grafico_no_orientado.Edges.ID); 
+                        anillos_fund_nombres{a} = grafico_no_orientado.Edges.Labels(id_puertas_local)';                        
                     end
                 end
             end            
@@ -317,8 +318,8 @@ classdef modelo_red < handle
                 cortes_fund_nombres = cell(size(cortes_fund_id));
                 for c = 1:length(cortes_fund_nombres)
                     if ~isempty(cortes_fund_id{c})
-                        [~, id_pueras_local] = ismember(cortes_fund_id{c}, grafico_no_orientado.Edges.ID); 
-                        cortes_fund_nombres{c} = grafico_no_orientado.Edges.Labels(id_pueras_local)';
+                        [~, id_puertas_local] = ismember(cortes_fund_id{c}, grafico_no_orientado.Edges.ID); 
+                        cortes_fund_nombres{c} = grafico_no_orientado.Edges.Labels(id_puertas_local)';
                     end
                 end
             end
